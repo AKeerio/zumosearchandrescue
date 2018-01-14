@@ -168,6 +168,8 @@ If we want to scan a room, we **must** do following
 8. We will then steer Zumo out of the room
 9. Press continue button
 
-When Zumo reaches end of corridors we can press the Turn back button to turn the Zumo back to starting point.
+When Zumo reaches end of corridors we can press the Turn back button to turn the Zumo back to starting point. Zumo does this by sorting the the navData array by corridor id. It then reads from last item of the array down to 0.
+Each index in navData array tells Zumo to which way to turn and whether its turning into a room or a corridor. This is not quite implement properly yet and does not work as expected. 
+Becuase I have yet sure how long to stay in corridor and or when to turn for a room. I could use timers but it would not be very effective.
 
 Pressing Turn back button will also display the navigation data.
