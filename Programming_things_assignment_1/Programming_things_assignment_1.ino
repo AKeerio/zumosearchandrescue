@@ -13,7 +13,6 @@
 #define ABOVE_LINE(sensor)((sensor) > QTR_THRESHOLD) //For checking if the reflectance sensor is on the black line
 
 #define QTR_THRESHOLD     1500 // microseconds
-#define REVERSE_SPEED     100 // 0 is stopped, 400 is full speed
 #define TURN_SPEED        100
 #define FORWARD_SPEED     100
 #define REVERSE_DURATION  200 // ms
@@ -32,9 +31,11 @@ int navArrayCount;      //For keeping track of index for the nav data
 int objectID;           //For keeping track of objects that are found in rooms
 int corridorID;         //Counting different corridors
 int roomID;             //Counting number of each room in each corridor
+unsigned long timeSpentInCorridor; //To be used when coming back
 boolean inSubCorridor;
-
-boolean isRoom;         //To check if we are going to enter a room or corridor
+boolean isRoom;
+boolean isExitingSubCorridor;
+//To check if we are going to enter a room or corridor
 
 struct nav {            //Recording of each step when going to corridor or room
   int corrID;           //and whether it was in the left or right
@@ -61,6 +62,7 @@ void setup()
   navArrayCount = 0;
   startTime = 0;
   endTime = 0;
+  isExitingSubCorridor = false;
   Serial.begin(57600);  //Set baud rate
   Serial.println("Press Zumo button to begin");
   button.waitForButton();
@@ -74,63 +76,113 @@ void setup()
 
 void calibrateSensorArray ()
 {
-
+  sensors.calibrate();
 }
 
 void keepInCorridor()//Keep within black lines
 {
-
-  sensors.read(sensor_values);
   //If left sensor as well right sensor are on the black line the it means its a wall
-  //If there was a line on the left immidiatly after the line on the righ tor vice verse
+  //If there was a line on the left immidiatly after the line on the righ tor vice versa
   //then it means its a corner
 
+  sensors.read(sensor_values);
   unsigned long elapsedTime = endTime - startTime;//if there was a a left wall immidiately afer right wall that its a corner
-  boolean isCorner = false;
-  if (elapsedTime > 0 && elapsedTime < 1000)
+  if (elapsedTime > 20 && elapsedTime < 1000)//If there is a ping pong motion then its a corner
   {
-    isCorner = true;
-    Serial.println("CORNER/FRONT WALL");
-    motors.setSpeeds(-REVERSE_SPEED, -REVERSE_SPEED);
-    delay(100);
+    Serial.println("CORNER");
+    motors.setSpeeds(-FORWARD_SPEED, -FORWARD_SPEED);
+    delay(300);
     motors.setSpeeds(0, 0   );
-    motors.setSpeeds(REVERSE_SPEED, -REVERSE_SPEED);
+    motors.setSpeeds(FORWARD_SPEED, -FORWARD_SPEED);
     delay(800);
     stop();
-  } else if (ABOVE_LINE(sensor_values[0]) && ABOVE_LINE(sensor_values[5]))
+    if (isExitingSubCorridor)
+    {
+      turnLastCorridorDirection();
+    }
+  }else
+  if (ABOVE_LINE(sensor_values[0]))
   {
-    motors.setSpeeds(-REVERSE_SPEED, -REVERSE_SPEED);
-    Serial.write("FRONT WALL");
-    delay(300);
-    stop();
-  } else
-  {
-    if (ABOVE_LINE(sensor_values[0]))      // if left sensor detects line, reverse and turn to the right
+    delay(50);
+    sensors.read(sensor_values);
+    if (ABOVE_LINE(sensor_values[5]))
+    {
+      Serial.println("FRONT WALL");
+      stop();
+      motors.setSpeeds(-FORWARD_SPEED, -FORWARD_SPEED);
+      delay(300);
+      stop();
+      if (isExitingSubCorridor)
+      {
+        turnLastCorridorDirection();
+      }
+    } else
     {
       Serial.println("LEFT WALL");
-      motors.setSpeeds(-REVERSE_SPEED, -REVERSE_SPEED);
+      motors.setSpeeds(-FORWARD_SPEED, -FORWARD_SPEED);
       delay(REVERSE_DURATION);
       motors.setSpeeds(TURN_SPEED, -TURN_SPEED);
       delay(TURN_DURATION);
       startTime = millis();
     }
-    else if (ABOVE_LINE(sensor_values[5]))  // if right sensor detects line, reverse and turn to the left
+
+  } else if (ABOVE_LINE(sensor_values[5]))
+  {
+    delay(50);
+    sensors.read(sensor_values);
+    if (ABOVE_LINE(sensor_values[0]))
+    {
+      Serial.println("FRONT WALL");
+      stop();
+      motors.setSpeeds(-FORWARD_SPEED, -FORWARD_SPEED);
+      delay(300);
+      stop();
+      if (isExitingSubCorridor)
+      {
+        turnLastCorridorDirection();
+      }
+    } else
     {
       Serial.println("RIGHT WALL");
-      motors.setSpeeds(-REVERSE_SPEED, -REVERSE_SPEED);
+      motors.setSpeeds(-FORWARD_SPEED, -FORWARD_SPEED);
       delay(REVERSE_DURATION);
       motors.setSpeeds(-TURN_SPEED, TURN_SPEED);
       delay(TURN_DURATION);
       motors.setSpeeds(FORWARD_SPEED, FORWARD_SPEED);
       endTime = millis();
     }
-    else
+  }
+  else
+  {
+    // otherwise, go straight
+    motors.setSpeeds(FORWARD_SPEED, FORWARD_SPEED);
+  }
+}
+
+
+void turnLastCorridorDirection()//Find exit of the sub-corridor by detecting a wall or corner in the front
+{
+  nav corrData;
+  for (int i = navArrayCount; i >= 0; i--)
+  {
+    if (navData[i].corrID == corridorID + 1)
     {
-      // otherwise, go straight
-      motors.setSpeeds(FORWARD_SPEED, FORWARD_SPEED);
+      corrData = navData[i];
     }
   }
-
+  if (corrData.leftRight == 'r')
+  {
+    motors.setSpeeds(FORWARD_SPEED, -FORWARD_SPEED);
+    delay(1500);
+  }
+  else if (corrData.leftRight == 'l')
+  {
+    motors.setSpeeds(FORWARD_SPEED, -FORWARD_SPEED);
+    delay(1500);
+  }
+  stop();
+  isExitingSubCorridor = false;
+  forward();
 }
 
 void exitSubCorridor()
@@ -142,15 +194,12 @@ void exitSubCorridor()
   if (navData[navArrayCount].leftRight == 'r') {
     motors.setSpeeds(-FORWARD_SPEED, FORWARD_SPEED);
     delay(3000);
-    stop();
   } else
   {
     motors.setSpeeds(FORWARD_SPEED, -FORWARD_SPEED);
     delay(3000);
-    stop();
   }
   forward();
-  corridorID--;
 }
 
 void stop() {
@@ -214,27 +263,72 @@ void gotoLeftCorridor()
 
 void turnBack()//Task 5
 {
-
-  if (navArrayCount > 0)
+  sortByCorridor();
+  for (int i = 0; i < navArrayCount; i++)
   {
-    for (int i = 0; i < navArrayCount; i++)
-    {
-      //Serial.print("Room/Corridor ");
-      //Serial.print(navData[i].roomCorr);
-      Serial.println("Goign back ");
-      Serial.print("Left/Right ");
-      Serial.print(" : ");
-      Serial.print(navData[i].leftRight);
-      Serial.print(" in Corridor No. ");
-      Serial.print(navData[i].corrID);
-      Serial.print(" Room No.");
-      Serial.println(navData[i].roomID);
-    }
+    Serial.println("Going back ");
+    if (navData[i].leftRight == 'l')
+      Serial.print("Left in ");
+    else
+      Serial.print(" Right in ");
+    if (navData[i].roomCorr == 'k')
+      Serial.print("Corridor ");
+    else
+      Serial.print("Room ");
+
+    Serial.print("- Corridor No. ");
+    Serial.print(navData[i].corrID);
+    Serial.print(" Room No.");
+    Serial.println(navData[i].roomID);
   }
   motors.setSpeeds(-FORWARD_SPEED, FORWARD_SPEED);
   delay(2800);
+    //becuase we are return left and right are flipped
+    for (int i = navArrayCount; i >= 0; i--)
+    {
+    if (navData[i].leftRight == 'l' && navData[i].roomCorr == 'k')//right corridor
+    { //turn right
+      stop();
+      motors.setSpeeds(FORWARD_SPEED, -FORWARD_SPEED);
+      delay(1500);
+    } else if (navData[i].leftRight == 'r' && navData[i].roomCorr == 'k')//left corridor
+    {
+      stop();
+      motors.setSpeeds(FORWARD_SPEED, -FORWARD_SPEED);
+      delay(1500);
+    } else if (navData[i].leftRight == 'l' && navData[i].roomCorr == 'j')//right room
+    { //turn right
+      stop();
+      motors.setSpeeds(FORWARD_SPEED, -FORWARD_SPEED);
+
+      scanRoom();
+      delay(1500);
+    } else if (navData[i].leftRight == 'r' && navData[i].roomCorr == 'j')//left room
+    {
+      stop();
+      motors.setSpeeds(FORWARD_SPEED, -FORWARD_SPEED);
+      scanRoom();
+      delay(1500);
+    }
+    motors.setSpeeds(FORWARD_SPEED, FORWARD_SPEED);
+    delay(5000);
+    }
   stop();
 }
+
+void sortByCorridor()
+{
+  for (int i = 0; i < navArrayCount - 1; i++)
+  {
+    int min = i;
+    for (int j = i + 1; j < navArrayCount; j++)
+      if (navData[j].corrID < navData[min].corrID) min = j;
+    nav temp = navData[i];
+    navData[i].corrID = navData[min].corrID;
+    navData[min] = temp;
+  }
+}
+
 void forward()
 {
   endTime = 0;
@@ -280,7 +374,7 @@ void processCommand(char dir)
         corridorID++;
         navData[navArrayCount].corrID = corridorID;
       } break;
-    case 'j': {        //if its room
+    case 'j': {        //if its a room
         isRoom = true;
         navData[navArrayCount].roomCorr = 'j';
         roomID++;
@@ -293,6 +387,9 @@ void processCommand(char dir)
         if (isRoom)
         {
           //gotoRightRoom();
+          motors.setSpeeds(FORWARD_SPEED, -FORWARD_SPEED);
+          delay(1500);
+          stop();
           navData[navArrayCount].leftRight = 'r';
           navArrayCount++;
           Serial.print("Going right into the room. No. ");
@@ -300,6 +397,8 @@ void processCommand(char dir)
         }
         else
         {
+          navData[navArrayCount].leftRight = 'r';
+          navArrayCount++;
           gotoRightCorridor();
         }
       } break;
@@ -307,6 +406,9 @@ void processCommand(char dir)
     case 'l': {
         if (isRoom)
         {
+          motors.setSpeeds(-FORWARD_SPEED, FORWARD_SPEED);
+          delay(1500);
+          stop();
           //gotoLeftRoom();
           navData[navArrayCount].leftRight = 'l';
           navArrayCount++;
@@ -315,6 +417,8 @@ void processCommand(char dir)
         }
         else
         {
+          navData[navArrayCount].leftRight = 'r';
+          navArrayCount++;
           gotoLeftCorridor();
         }
       } break;
@@ -327,8 +431,10 @@ void processCommand(char dir)
         if (inSubCorridor && corridorID > 0)
         {
           exitSubCorridor();
+          isExitingSubCorridor = true;
         }
-      }
+        corridorID--;
+      } break;
     //for turning back
     case 'e': {
         turnBack();
