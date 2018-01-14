@@ -11,6 +11,7 @@ import com.fazecast.jSerialComm.SerialPortEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -28,6 +29,7 @@ public class GUI extends javax.swing.JFrame {
     SerialPort port;
 
     public GUI() {
+        
         initComponents();
         initialise();
 
@@ -80,7 +82,7 @@ public class GUI extends javax.swing.JFrame {
         navArea = new javax.swing.JTextArea();
         jLabel6 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
+        clearBtn = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         addKeyListener(new java.awt.event.KeyAdapter() {
@@ -90,6 +92,7 @@ public class GUI extends javax.swing.JFrame {
         });
 
         backBtn.setText("V");
+        backBtn.setEnabled(false);
         backBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 backBtnActionPerformed(evt);
@@ -97,6 +100,7 @@ public class GUI extends javax.swing.JFrame {
         });
 
         leftBtn.setText("<");
+        leftBtn.setEnabled(false);
         leftBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 leftBtnActionPerformed(evt);
@@ -104,6 +108,7 @@ public class GUI extends javax.swing.JFrame {
         });
 
         forwardBtn2.setText("^");
+        forwardBtn2.setEnabled(false);
         forwardBtn2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 forwardBtn2ActionPerformed(evt);
@@ -111,6 +116,7 @@ public class GUI extends javax.swing.JFrame {
         });
 
         rightBtn.setText(">");
+        rightBtn.setEnabled(false);
         rightBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 rightBtnActionPerformed(evt);
@@ -126,6 +132,7 @@ public class GUI extends javax.swing.JFrame {
         connectionLbl.setText("Select a port");
 
         stopBtn.setText("Stop (p)");
+        stopBtn.setEnabled(false);
         stopBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 stopBtnActionPerformed(evt);
@@ -134,6 +141,7 @@ public class GUI extends javax.swing.JFrame {
 
         contBtn.setText("Continue (c)");
         contBtn.setToolTipText("");
+        contBtn.setEnabled(false);
         contBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 contBtnActionPerformed(evt);
@@ -141,6 +149,7 @@ public class GUI extends javax.swing.JFrame {
         });
 
         corrBtn.setText("Corridor");
+        corrBtn.setEnabled(false);
         corrBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 corrBtnActionPerformed(evt);
@@ -148,6 +157,7 @@ public class GUI extends javax.swing.JFrame {
         });
 
         roomBtn1.setText("Room");
+        roomBtn1.setEnabled(false);
         roomBtn1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 roomBtn1ActionPerformed(evt);
@@ -155,6 +165,7 @@ public class GUI extends javax.swing.JFrame {
         });
 
         leftBtn2.setText("Left");
+        leftBtn2.setEnabled(false);
         leftBtn2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 leftBtn2ActionPerformed(evt);
@@ -162,6 +173,7 @@ public class GUI extends javax.swing.JFrame {
         });
 
         rightBtn2.setText("Right");
+        rightBtn2.setEnabled(false);
         rightBtn2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 rightBtn2ActionPerformed(evt);
@@ -169,6 +181,7 @@ public class GUI extends javax.swing.JFrame {
         });
 
         turnbackBtn.setText("Turn Back (e)");
+        turnbackBtn.setEnabled(false);
         turnbackBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 turnbackBtnActionPerformed(evt);
@@ -178,6 +191,7 @@ public class GUI extends javax.swing.JFrame {
         jLabel5.setText("w, a, s, d");
 
         scanBtn.setText("Scan");
+        scanBtn.setEnabled(false);
         scanBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 scanBtnActionPerformed(evt);
@@ -188,6 +202,7 @@ public class GUI extends javax.swing.JFrame {
         jLabel8.setText("Zumo Search and Rescue");
 
         exitCorridor.setText("Exit Corridor (z)");
+        exitCorridor.setEnabled(false);
         exitCorridor.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 exitCorridorActionPerformed(evt);
@@ -230,10 +245,11 @@ public class GUI extends javax.swing.JFrame {
 
         jLabel9.setText("Stopping?");
 
-        jButton1.setText("Clear");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        clearBtn.setText("Clear");
+        clearBtn.setEnabled(false);
+        clearBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                clearBtnActionPerformed(evt);
             }
         });
 
@@ -274,7 +290,7 @@ public class GUI extends javax.swing.JFrame {
                         .addGap(21, 21, 21))))
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(306, 306, 306)
-                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(clearBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
@@ -301,7 +317,7 @@ public class GUI extends javax.swing.JFrame {
                     .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(clearBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0))
         );
 
@@ -347,13 +363,12 @@ public class GUI extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addGap(149, 149, 149)
                         .addComponent(jLabel5)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(jLabel8)
                         .addGap(265, 265, 265))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(95, 95, 95))))
         );
@@ -413,9 +428,24 @@ public class GUI extends javax.swing.JFrame {
             public void itemStateChanged(ItemEvent arg0) {
                 //if(port.isOpen()) port.closePort();
                 int chosenPort = portsComboBox.getSelectedIndex();
-
+                forwardBtn2.setEnabled(true);
+                backBtn.setEnabled(true);
+                leftBtn.setEnabled(true);
+                rightBtn.setEnabled(true);
+                 leftBtn2.setEnabled(true);
+                rightBtn2.setEnabled(true);
+                stopBtn.setEnabled(true);
+                turnbackBtn.setEnabled(true);
+                exitCorridor.setEnabled(true);
+                clearBtn.setEnabled(true);
+                clearBtn.setEnabled(true);
+                roomBtn1.setEnabled(true);
+                corrBtn.setEnabled(true);
+                contBtn.setEnabled(true);
+                scanBtn.setEnabled(true);
+                
                 port = ports[chosenPort];
-                port.setBaudRate(57600);
+                port.setBaudRate(38400);
                 if (port.openPort()) {
                     connectionLbl.setText("Successfully opened the port.");
                     port.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 0, 0);
@@ -442,7 +472,7 @@ public class GUI extends javax.swing.JFrame {
                                 } else if (str.contains("FRONT WALL") || str.contains("LEFT WALL") || str.contains("RIGHT WALL")||str.contains("CORNER")) {
                                     wallArea.append(str + "\n");
                                     wallArea.setCaretPosition(wallArea.getDocument().getLength() - 1);
-                                } else if (str.contains("Found Object")) {
+                                } else if (str.contains("Found Object")||str.contains("in Corridor No.")) {
                                     searchArea.append(str + "\n");
                                     searchArea.setCaretPosition(searchArea.getDocument().getLength() - 1);
                                 } else if (str.contains("- Corridor No. ")) {
@@ -524,7 +554,7 @@ public class GUI extends javax.swing.JFrame {
         send('r');
     }//GEN-LAST:event_rightBtn2ActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void clearBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clearBtnActionPerformed
         wallArea.setText("");
         disArea.setText("");
         msgArea.setText("");
@@ -532,7 +562,7 @@ public class GUI extends javax.swing.JFrame {
         navArea.setText("");
         stopArea.setText("");
         // TODO add your handling code here:
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_clearBtnActionPerformed
 
     private void turnbackBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_turnbackBtnActionPerformed
         // TODO add your handling code here:
@@ -589,7 +619,7 @@ public class GUI extends javax.swing.JFrame {
      * @param e
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
+    public static void main(String args[])  {
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
@@ -616,21 +646,22 @@ public class GUI extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
+                
                 new GUI().setVisible(true);
-
+                
             }
         });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton backBtn;
+    private javax.swing.JButton clearBtn;
     private javax.swing.JLabel connectionLbl;
     private javax.swing.JButton contBtn;
     private javax.swing.JButton corrBtn;
     private javax.swing.JTextArea disArea;
     private javax.swing.JButton exitCorridor;
     private javax.swing.JButton forwardBtn2;
-    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

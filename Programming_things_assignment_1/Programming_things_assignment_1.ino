@@ -8,10 +8,8 @@
 #define LED 13
 #define TRIGGER_PIN       12  // Arduino pin tied to trigger pin on the ultrasonic sensor.
 #define ECHO_PIN          11  // Arduino pin tied to echo pin on the ultrasonic sensor.
-#define LED_PIN           13
 #define MAX_DISTANCE      200 // Maximum distance we want to ping for (in centimeters). Maximum sensor distance is rated at 400-500cm.
 #define ABOVE_LINE(sensor)((sensor) > QTR_THRESHOLD) //For checking if the reflectance sensor is on the black line
-
 #define QTR_THRESHOLD     1500 // microseconds
 #define TURN_SPEED        100
 #define FORWARD_SPEED     100
@@ -31,6 +29,7 @@ int navArrayCount;      //For keeping track of index for the nav data
 int objectID;           //For keeping track of objects that are found in rooms
 int corridorID;         //Counting different corridors
 int roomID;             //Counting number of each room in each corridor
+int roomIDCopy;         //For remembering the rooms in last corridor
 unsigned long timeSpentInCorridor; //To be used when coming back
 boolean inSubCorridor;
 boolean isRoom;
@@ -57,13 +56,13 @@ void setup()
 
   //Initialise variables
   objectID = 0;
-  corridorID = 0;
+  corridorID = 0;  
   roomID = 0;
   navArrayCount = 0;
   startTime = 0;
   endTime = 0;
   isExitingSubCorridor = false;
-  Serial.begin(57600);  //Set baud rate
+  Serial.begin(38400);  //Set baud rate
   Serial.println("Press Zumo button to begin");
   button.waitForButton();
   buzzer.playNote(NOTE_G(3), 200, 15);
@@ -92,7 +91,7 @@ void keepInCorridor()//Keep within black lines
     Serial.println("CORNER");
     motors.setSpeeds(-FORWARD_SPEED, -FORWARD_SPEED);
     delay(300);
-    motors.setSpeeds(0, 0   );
+    motors.setSpeeds(0, 0);
     motors.setSpeeds(FORWARD_SPEED, -FORWARD_SPEED);
     delay(800);
     stop();
@@ -100,8 +99,7 @@ void keepInCorridor()//Keep within black lines
     {
       turnLastCorridorDirection();
     }
-  }else
-  if (ABOVE_LINE(sensor_values[0]))
+  } else if (ABOVE_LINE(sensor_values[0]))
   {
     delay(50);
     sensors.read(sensor_values);
@@ -200,6 +198,7 @@ void exitSubCorridor()
     delay(3000);
   }
   forward();
+  roomID=roomIDCopy;
 }
 
 void stop() {
@@ -228,8 +227,8 @@ void scanRoom() //For searching rooms
   {
     Serial.println(navArrayCount);
     Serial.print("Found Object. ID: ");
-    Serial.print(objectID);
-    Serial.print(" Corridor ");
+    Serial.println(objectID);
+    Serial.print("in Corridor No.");
     Serial.print(corridorID);
     Serial.print(" Room ");
     Serial.println(roomID);
@@ -245,7 +244,7 @@ void gotoRightCorridor()
   Serial.print("Going right into the corridor No. ");
   Serial.println(corridorID);
   motors.setSpeeds(FORWARD_SPEED, -FORWARD_SPEED);
-  delay(1500);
+  delay(1300);
   resumed = true;
   keepInCorridor();
 }
@@ -256,36 +255,41 @@ void gotoLeftCorridor()
   Serial.print("Going left into the corridor. No ");
   Serial.println(corridorID);
   motors.setSpeeds(-FORWARD_SPEED, FORWARD_SPEED);
-  delay(1500);
+  delay(1300);
   resumed = true;
   keepInCorridor();
 }
 
 void turnBack()//Task 5
 {
-  sortByCorridor();
-  for (int i = 0; i < navArrayCount; i++)
+   for (int i = 0; i < navArrayCount; i++)
   {
-    Serial.println("Going back ");
     if (navData[i].leftRight == 'l')
       Serial.print("Left in ");
     else
       Serial.print(" Right in ");
     if (navData[i].roomCorr == 'k')
+    {
       Serial.print("Corridor ");
+      Serial.print("- Corridor No. ");
+      Serial.println(navData[i].corrID);
+    }
     else
+    {
       Serial.print("Room ");
-
-    Serial.print("- Corridor No. ");
-    Serial.print(navData[i].corrID);
-    Serial.print(" Room No.");
-    Serial.println(navData[i].roomID);
+      Serial.print("- Corridor No. ");
+      Serial.print(navData[i].corrID);
+      Serial.print(" Room No.");
+      Serial.println(navData[i].roomID);
+    }
   }
+  sortByCorridor();
+  /*
   motors.setSpeeds(-FORWARD_SPEED, FORWARD_SPEED);
   delay(2800);
-    //becuase we are return left and right are flipped
-    for (int i = navArrayCount; i >= 0; i--)
-    {
+  //becuase we are return left and right are flipped
+  for (int i = navArrayCount; i >= 0; i--)
+  {
     if (navData[i].leftRight == 'l' && navData[i].roomCorr == 'k')//right corridor
     { //turn right
       stop();
@@ -312,7 +316,7 @@ void turnBack()//Task 5
     }
     motors.setSpeeds(FORWARD_SPEED, FORWARD_SPEED);
     delay(5000);
-    }
+  }*/
   stop();
 }
 
@@ -367,6 +371,7 @@ void processCommand(char dir)
         delay(2);
       } break;
     case 'k': {        //if its a new corridor
+        roomIDCopy=roomID;
         roomID = 0;
         isRoom = false;
         inSubCorridor = true;
@@ -448,8 +453,8 @@ void processCommand(char dir)
 void loop()
 {
   //Serial.print("Distance: ");
-  //Serial.print(sonar.ping_cm()); // Send ping, get distance in cm and print result (0 = outside set distance range)
-  //Serial.println("cm");
+  Serial.print(sonar.ping_cm()); // Send ping, get distance in cm and print result (0 = outside set distance range)
+  Serial.println("cm");
 
   if (Serial.available() > 0) {
     dir = Serial.read();
