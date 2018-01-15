@@ -62,7 +62,7 @@ void setup()
   startTime = 0;
   endTime = 0;
   isExitingSubCorridor = false;
-  Serial.begin(38400);  //Set baud rate
+  Serial.begin(57600);  //Set baud rate
   Serial.println("Press Zumo button to begin");
   button.waitForButton();
   buzzer.playNote(NOTE_G(3), 200, 15);
@@ -215,7 +215,7 @@ void scanRoom() //For searching rooms
   delay(1000);
   for (int i = 0; i < 8; i++)//rotate and scan.
   {
-    if ((sonar.ping_cm() > 0 && sonar.ping_cm() < 10))
+    if ((sonar.ping_cm() > 0 && sonar.ping_cm() < 7))
     {
       found = true;//check multiple times to check different areas of room
       buzzer.playNote(NOTE_G(3), 200, 15);
@@ -284,39 +284,42 @@ void turnBack()//Task 5
     }
   }
   sortByCorridor();
-  /*
   motors.setSpeeds(-FORWARD_SPEED, FORWARD_SPEED);
   delay(2800);
   //becuase we are return left and right are flipped
   for (int i = navArrayCount; i >= 0; i--)
   {
-    if (navData[i].leftRight == 'l' && navData[i].roomCorr == 'k')//right corridor
+    forward();
+    if (navData[i].leftRight == 'l' && navData[i].roomCorr == 'k' && !resumed)//right corridor
     { //turn right
       stop();
       motors.setSpeeds(FORWARD_SPEED, -FORWARD_SPEED);
-      delay(1500);
-    } else if (navData[i].leftRight == 'r' && navData[i].roomCorr == 'k')//left corridor
+      forward();
+      
+    } else if (navData[i].leftRight == 'r' && navData[i].roomCorr == 'k' && !resumed)//left corridor
     {
       stop();
       motors.setSpeeds(FORWARD_SPEED, -FORWARD_SPEED);
       delay(1500);
+      forward();
     } else if (navData[i].leftRight == 'l' && navData[i].roomCorr == 'j')//right room
     { //turn right
       stop();
       motors.setSpeeds(FORWARD_SPEED, -FORWARD_SPEED);
-
+      delay(1500);
       scanRoom();
       delay(1500);
     } else if (navData[i].leftRight == 'r' && navData[i].roomCorr == 'j')//left room
     {
       stop();
       motors.setSpeeds(FORWARD_SPEED, -FORWARD_SPEED);
+      delay(1500);
       scanRoom();
       delay(1500);
     }
     motors.setSpeeds(FORWARD_SPEED, FORWARD_SPEED);
     delay(5000);
-  }*/
+  }
   stop();
 }
 
@@ -453,8 +456,8 @@ void processCommand(char dir)
 void loop()
 {
   //Serial.print("Distance: ");
-  Serial.print(sonar.ping_cm()); // Send ping, get distance in cm and print result (0 = outside set distance range)
-  Serial.println("cm");
+  //Serial.print(sonar.ping_cm()); // Send ping, get distance in cm and print result (0 = outside set distance range)
+  //Serial.println("cm");
 
   if (Serial.available() > 0) {
     dir = Serial.read();
