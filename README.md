@@ -14,6 +14,9 @@ For this assignment we were assigned 5 tasks to program Zumo for a simulated sea
 3. When Zumo is finished search a side corridor it stops. It is then told to exit corridor. At this point Zumo recognises that it is exit side corridor and is return to last corridor (main corridor)
 
 1. If Zumo reaches end of main corridor it can be told to come back. At this point it processes all information recorded in task 4 to backtrack every corridor and every room in them. If rooms that had objects are not empty it alerts and sends message.
+**Link to video. Click on the image below**
+
+[![Zumo video on youtube](https://img.youtube.com/vi/IeB4izd4S5Y/0.jpg)](https://youtu.be/IeB4izd4S5Y)
 
 **Acknowledgement and Sources**
 
