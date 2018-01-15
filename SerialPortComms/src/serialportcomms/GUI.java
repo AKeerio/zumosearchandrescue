@@ -445,7 +445,7 @@ public class GUI extends javax.swing.JFrame {
                 scanBtn.setEnabled(true);
                 
                 port = ports[chosenPort];
-                port.setBaudRate(38400);
+                port.setBaudRate(57600);
                 if (port.openPort()) {
                     connectionLbl.setText("Successfully opened the port.");
                     port.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 0, 0);
